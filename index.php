@@ -2,7 +2,8 @@
 	/*
 	    The MIT License (MIT)
 
-	    Copyright (c) 2014 Oliver Moran
+	    Copyright (c) 2014 Oliver Moran, and github.com/vjcharles altered API and include 
+	    hidden url params.
 
 	    Permission is hereby granted, free of charge, to any person obtaining a copy of
 	    this software and associated documentation files (the "Software"), to deal in
@@ -23,10 +24,31 @@
 	    SOFTWARE.
 	*/
 
-	// Used to enable cross-domain AJAX calls.
-	// Example: index.php?url=http://www.example.org/resource.json
+	// Used to enable CORS calls and hide your secrets from the client making the request.
+	// Example: index.php?http://www.example.org/resource.json?count=1&length=full
 
-	$url = $_REQUEST["url"];
+        /////////////////////////////////////////
+        // Configuration
+	// =============
+	//
+	// Supported Domains and respective parameters to add.
+	$whitelist = array(
+		"airnowapi.org" => array(
+			"API_KEY" => "SOME_API_KEY",
+		),
+	);	
+	// end Configuration
+        /////////////////////////////////////////
+
+        //echo print_r($_SERVER["REQUEST_URI"]);
+	//$url = $_REQUEST["url"];
+	$request_uri = $_SERVER["REQUEST_URI"];
+	$request_split = preg_split("/php\?/", $request_uri);
+	if ($request_split[1]) {
+		$url = $request_split[1]; 
+	} else {
+		die("ERROR: The url must include a single parameter of the URL to proxy. Ex. ...php?https://your_api_call.com?json");
+	}
 	
 	if (substr ($url, 0, 7) != "http://"
 		&& substr ($url, 0, 8) != "https://"
@@ -36,11 +58,17 @@
 		die("ERROR: The argument 'url' must be an absolute URL beginning with 'http://', 'https://', or 'ftp://'.");
 	}
 
+	if (!is_url_whitelisted($url)) {
+		die("ERROR: This url is not whitelisted.");	
+	}
+
 	// temporarily override CURLs user agent with the user's own
 	ini_set("user_agent", $_SERVER['HTTP_USER_AGENT']);
 
 	// enable access from all domains
 	enable_cors();
+
+	$url = add_param($url);
 
 	switch ($_SERVER["REQUEST_METHOD"]) {
 		case "GET":
@@ -51,6 +79,42 @@
 			break;
 	}
 
+
+	function is_url_whitelisted($url) {
+		global $whitelist;
+		$is_whitelisted = false;
+		foreach ($whitelist as $key => $value) {
+			if (count(explode($key, $url)) > 1) {
+				$is_whitelisted = true;
+			}
+		}
+		return $is_whitelisted;
+	}
+
+	function get_params($url) {
+		global $whitelist;
+		$params = array();
+		foreach ($whitelist as $key => $value) {
+			if (count(explode($key, $url)) > 1) {
+				$params = $value;
+			}
+		}
+		return $params;
+	}
+
+	// append extra url parameters, like a hidden API key
+	// this blows away existing params if already in the url.
+	function add_param($url) {
+		$url_parts = parse_url($url);
+		parse_str($url_parts['query'], $params);
+		$new_params = get_params($url);
+		if (count($new_params) > 0) {
+			$params = array_merge($params, $new_params);
+		}
+		$url_parts['query'] = http_build_query($params);
+		$new_url = $url_parts['scheme'] . '://' . $url_parts['host'] . $url_parts['path'] . '?' . $url_parts['query'];
+		return $new_url;
+	}
 
 	// get the contents of the URL and echo the results
 	function get($url) {
