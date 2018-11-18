@@ -2,8 +2,8 @@
 	/*
 	    The MIT License (MIT)
 
-	    Copyright (c) 2014 Oliver Moran, and github.com/vjcharles altered API and include 
-	    hidden url params.
+	    Copyright (c) 2014 Oliver Moran, and 2018 github.com/vjcharles changed API &
+	    modified as an API-Proxy.
 
 	    Permission is hereby granted, free of charge, to any person obtaining a copy of
 	    this software and associated documentation files (the "Software"), to deal in
@@ -37,6 +37,10 @@
 			"API_KEY" => "SOME_API_KEY",
 		),
 	);	
+
+	// enable access from all domains. Comment this out if you want to only allow your clients making cors requests
+	enable_cors();
+
 	// end Configuration
         /////////////////////////////////////////
 
@@ -64,9 +68,6 @@
 
 	// temporarily override CURLs user agent with the user's own
 	ini_set("user_agent", $_SERVER['HTTP_USER_AGENT']);
-
-	// enable access from all domains
-	enable_cors();
 
 	$url = add_param($url);
 
