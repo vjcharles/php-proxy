@@ -32,11 +32,8 @@
 	// =============
 	//
 	// Supported Domains and respective parameters to add.
-	$whitelist = array(
-		"airnowapi.org" => array(
-			"API_KEY" => "SOME_API_KEY",
-		),
-	);	
+	// create this file above root of app. Rename 'config.ini.php' as needed.
+        $config_array = parse_ini_file("config.ini.php");
 
 	// enable access from all domains. Comment this out if you want to only allow your clients making cors requests
 	enable_cors();
@@ -82,9 +79,9 @@
 
 
 	function is_url_whitelisted($url) {
-		global $whitelist;
+		global $config_array;
 		$is_whitelisted = false;
-		foreach ($whitelist as $key => $value) {
+		foreach ($config_array as $key => $value) {
 			if (count(explode($key, $url)) > 1) {
 				$is_whitelisted = true;
 			}
@@ -93,9 +90,9 @@
 	}
 
 	function get_params($url) {
-		global $whitelist;
+		global $config_array;
 		$params = array();
-		foreach ($whitelist as $key => $value) {
+		foreach ($config_array as $key => $value) {
 			if (count(explode($key, $url)) > 1) {
 				$params = $value;
 			}
