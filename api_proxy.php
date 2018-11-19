@@ -25,15 +25,15 @@
 	*/
 
 	// Used to enable CORS calls and hide your secrets from the client making the request.
-	// Example: index.php?http://www.example.org/resource.json?count=1&length=full
+	// Example: proxy.php?http://www.example.org/resource.json?count=1&length=full
 
         /////////////////////////////////////////
         // Configuration
 	// =============
 	//
 	// Supported Domains and respective parameters to add.
-	// create this file above root of app. Rename 'config.ini.php' as needed.
-        $config_array = parse_ini_file("config.ini.php");
+	// Warning: Do not put this in your web directories without explicitly preventing web access via .htaccess OR create this file above root of app. 
+        $config_array = parse_ini_file("../configs/config.ini.php");
 
 	// enable access from all domains. Comment this out if you want to only allow your clients making cors requests
 	enable_cors();
